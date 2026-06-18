@@ -1,9 +1,9 @@
 // MellowPDF Service Worker — Cache-First Strategy
 // Caches all assets on install so the app works 100% offline
 
-const CACHE_NAME = 'mellowpdf-v1';
+const CACHE_NAME = 'mellowpdf-v2';
 
-// All local assets to pre-cache on install
+// Local assets to pre-cache on install
 const PRECACHE_ASSETS = [
     '/',
     '/index.html',
@@ -21,41 +21,65 @@ const PRECACHE_ASSETS = [
     '/icons/icon-512.png'
 ];
 
-// CDN libraries — cache at runtime on first fetch
+// CDN libraries — also pre-cached during install so offline works immediately.
+// Each is fetched with no-cors where needed and cached individually.
 const CDN_ASSETS = [
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
     'https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js',
     'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js',
-    'https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap'
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js'
 ];
 
-// ─── Install: pre-cache all local assets ────────────────────────────────────
+// ─── Helper: is this a cacheable URL? ────────────────────────────────────────
+function isCacheableRequest(request) {
+    const url = request.url;
+    // Only cache http / https — skip chrome-extension://, data:, blob:, etc.
+    return url.startsWith('http://') || url.startsWith('https://');
+}
+
+// ─── Install: pre-cache local assets + CDN libraries ─────────────────────────
 self.addEventListener('install', (event) => {
     event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
+        caches.open(CACHE_NAME).then(async (cache) => {
             console.log('[SW] Pre-caching local assets...');
-            return cache.addAll(PRECACHE_ASSETS);
-        }).then(() => {
-            console.log('[SW] Pre-cache complete. Skipping waiting...');
-            return self.skipWaiting();
-        })
+
+            // Cache local assets (must succeed — addAll throws if any fail)
+            await cache.addAll(PRECACHE_ASSETS);
+
+            // Cache CDN assets individually with graceful failure.
+            // Use no-cors so cross-origin scripts can still be stored as opaque responses.
+            await Promise.allSettled(
+                CDN_ASSETS.map(url =>
+                    fetch(url, { mode: 'cors', credentials: 'omit' })
+                        .then(res => {
+                            if (res.ok || res.type === 'opaque') {
+                                return cache.put(url, res);
+                            }
+                        })
+                        .catch(err => {
+                            console.warn('[SW] Could not pre-cache CDN asset (offline?):', url, err.message);
+                        })
+                )
+            );
+
+            console.log('[SW] Pre-cache complete.');
+        }).then(() => self.skipWaiting())
     );
 });
 
 // ─── Activate: clean up old caches ──────────────────────────────────────────
 self.addEventListener('activate', (event) => {
     event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
+        caches.keys().then((cacheNames) =>
+            Promise.all(
                 cacheNames
                     .filter(name => name !== CACHE_NAME)
                     .map(name => {
                         console.log('[SW] Deleting old cache:', name);
                         return caches.delete(name);
                     })
-            );
-        }).then(() => {
+            )
+        ).then(() => {
             console.log('[SW] Activated. Claiming clients...');
             return self.clients.claim();
         })
@@ -64,55 +88,70 @@ self.addEventListener('activate', (event) => {
 
 // ─── Fetch: Cache-First with Network Fallback ────────────────────────────────
 self.addEventListener('fetch', (event) => {
-    // Only handle GET requests
-    if (event.request.method !== 'GET') return;
+    const request = event.request;
 
-    const url = new URL(event.request.url);
+    // Only intercept GET requests over http(s) — ignore chrome-extension, data, blob, etc.
+    if (request.method !== 'GET') return;
+    if (!isCacheableRequest(request)) return;
 
-    // Strategy: Cache first, then network, then offline fallback
+    // For Google Fonts CSS (varies by user-agent), just pass through — don't cache
+    if (request.url.includes('fonts.googleapis.com') || request.url.includes('fonts.gstatic.com')) {
+        return; // let browser handle it normally
+    }
+
     event.respondWith(
-        caches.match(event.request).then((cachedResponse) => {
+        caches.match(request).then((cachedResponse) => {
             if (cachedResponse) {
-                // Serve from cache immediately
-                // Also update cache in background for CDN assets
-                if (CDN_ASSETS.some(cdn => event.request.url.startsWith(cdn.split('?')[0]))) {
-                    const fetchPromise = fetch(event.request).then((networkResponse) => {
-                        if (networkResponse && networkResponse.ok) {
-                            caches.open(CACHE_NAME).then(cache => {
-                                cache.put(event.request, networkResponse.clone());
-                            });
-                        }
-                        return networkResponse;
-                    }).catch(() => { /* offline, no-op */ });
+                // Serve from cache immediately.
+                // For CDN scripts, silently revalidate in the background if online.
+                if (CDN_ASSETS.some(cdn => request.url.startsWith(cdn))) {
+                    fetch(request, { mode: 'cors', credentials: 'omit' })
+                        .then(networkResponse => {
+                            if (networkResponse && (networkResponse.ok || networkResponse.type === 'opaque')) {
+                                caches.open(CACHE_NAME).then(cache => {
+                                    cache.put(request, networkResponse.clone());
+                                });
+                            }
+                        })
+                        .catch(() => { /* offline — serve from cache, no-op */ });
                 }
                 return cachedResponse;
             }
 
-            // Not in cache — fetch from network and cache it
-            return fetch(event.request).then((networkResponse) => {
-                if (!networkResponse || !networkResponse.ok) {
+            // Not in cache yet — try network, then cache the result
+            return fetch(request, { credentials: 'same-origin' })
+                .then((networkResponse) => {
+                    if (!networkResponse || !networkResponse.ok) {
+                        return networkResponse;
+                    }
+
+                    // Store a clone in cache for next time
+                    caches.open(CACHE_NAME).then((cache) => {
+                        try {
+                            cache.put(request, networkResponse.clone());
+                        } catch (e) {
+                            console.warn('[SW] Could not cache response:', request.url, e.message);
+                        }
+                    });
+
                     return networkResponse;
-                }
-
-                // Cache the fetched response for future use
-                const responseToCache = networkResponse.clone();
-                caches.open(CACHE_NAME).then((cache) => {
-                    cache.put(event.request, responseToCache);
+                })
+                .catch(() => {
+                    // Fully offline and not in cache
+                    if (request.destination === 'document') {
+                        return caches.match('/index.html');
+                    }
+                    return new Response('Offline — resource not cached.', {
+                        status: 503,
+                        statusText: 'Service Unavailable',
+                        headers: { 'Content-Type': 'text/plain' }
+                    });
                 });
-
-                return networkResponse;
-            }).catch(() => {
-                // Network failed — serve the main page as offline fallback
-                if (event.request.destination === 'document') {
-                    return caches.match('/index.html');
-                }
-                return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
-            });
         })
     );
 });
 
-// ─── Message: force cache refresh ───────────────────────────────────────────
+// ─── Message: force immediate activation ────────────────────────────────────
 self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'SKIP_WAITING') {
         self.skipWaiting();
