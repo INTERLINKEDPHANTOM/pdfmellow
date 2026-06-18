@@ -2959,12 +2959,14 @@ footer {
 
 @media (max-width: 768px) {
     .editor-modal-close-btn {
+        position: absolute;
         top: 1rem;
         right: 1rem;
         width: 38px;
         height: 38px;
         font-size: 1.1rem;
-        display: none !important; /* Hide standard close button in favor of footer cancel */
+        display: flex !important;
+        z-index: 1005; /* Above floating header */
     }
 }
 

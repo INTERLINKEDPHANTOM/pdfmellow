@@ -23,6 +23,8 @@ let dragSourceEl = null;
 let activeEditingPageId = null;
 let currentTextContentItems = [];
 let currentViewport = null;
+let editorScale = 1.5;
+let lastPageId = null;
 
 // Watermark & Page Numbering Settings Configurations
 let watermarkConfig = {
@@ -118,6 +120,8 @@ const mobileEditorCancelBtn = document.getElementById('mobile-editor-cancel-btn'
 const mobileEditorSaveBtn = document.getElementById('mobile-editor-save-btn');
 const mobileEditorRotateBtn = document.getElementById('mobile-editor-rotate-btn');
 const mobileEditorDeleteBtn = document.getElementById('mobile-editor-delete-btn');
+const mobileEditorZoomInBtn = document.getElementById('mobile-editor-zoom-in-btn');
+const mobileEditorZoomOutBtn = document.getElementById('mobile-editor-zoom-out-btn');
 
 // Workspace Settings Sidebar Elements
 const workspaceSettingsSidebar = document.getElementById('workspace-settings-sidebar');
@@ -259,10 +263,20 @@ document.addEventListener('DOMContentLoaded', () => {
         mobileEditorSaveBtn.addEventListener('click', saveTextEdits);
     }
     if (mobileEditorRotateBtn) {
-        mobileEditorRotateBtn.addEventListener('click', editorRotateActivePage);
+        mobileEditorRotateBtn.addEventListener('click', () => {
+            // Reset page fit scale so rotation fits properly
+            lastPageId = null;
+            editorRotateActivePage();
+        });
     }
     if (mobileEditorDeleteBtn) {
         mobileEditorDeleteBtn.addEventListener('click', editorDeleteActivePage);
+    }
+    if (mobileEditorZoomInBtn) {
+        mobileEditorZoomInBtn.addEventListener('click', () => zoomEditor(0.15));
+    }
+    if (mobileEditorZoomOutBtn) {
+        mobileEditorZoomOutBtn.addEventListener('click', () => zoomEditor(-0.15));
     }
 
     // Watermark Settings Listeners
@@ -1472,8 +1486,24 @@ async function openTextEditor(pageId) {
         const pdfDoc = file.pdfDoc;
         const page = await pdfDoc.getPage(pageItem.originalPageNum);
         
-        // Large render scale for visual accuracy in workspace
-        currentViewport = page.getViewport({ scale: 1.5, rotation: pageItem.localRotation });
+        // Calculate initial dynamic scale to fit page inside mobile screen width if page changed
+        if (pageId !== lastPageId) {
+            lastPageId = pageId;
+            const unscaledViewport = page.getViewport({ scale: 1.0, rotation: pageItem.localRotation });
+            const isMobile = window.innerWidth <= 768;
+            if (isMobile) {
+                // Leave a 24px total padding on each side
+                const wrapperWidth = window.innerWidth - 48;
+                editorScale = wrapperWidth / unscaledViewport.width;
+                // Clamp default dynamic scale between 0.5 and 1.5
+                editorScale = Math.max(0.5, Math.min(1.5, editorScale));
+            } else {
+                editorScale = 1.5;
+            }
+        }
+
+        // Render viewport with the responsive/user-adjusted editorScale
+        currentViewport = page.getViewport({ scale: editorScale, rotation: pageItem.localRotation });
         
         editorCanvas.width = currentViewport.width;
         editorCanvas.height = currentViewport.height;
@@ -1506,8 +1536,8 @@ async function openTextEditor(pageId) {
             const [x, y] = currentViewport.convertToViewportPoint(transform[4], transform[5]);
             
             // PDF font size is represented by vertical transform scale
-            const fontSize = Math.abs(transform[3]) * 1.5;
-            const width = item.width * 1.5;
+            const fontSize = Math.abs(transform[3]) * editorScale;
+            const width = item.width * editorScale;
             
             const textDiv = document.createElement('div');
             textDiv.className = 'editable-text-item';
@@ -1560,8 +1590,8 @@ async function openTextEditor(pageId) {
         existingEdits.forEach(edit => {
             if (typeof edit.index === 'string' && edit.index.startsWith('new-')) {
                 const [x, y] = currentViewport.convertToViewportPoint(edit.x, edit.y);
-                const fontSize = edit.fontSize * 1.5;
-                const width = edit.width * 1.5;
+                const fontSize = edit.fontSize * editorScale;
+                const width = edit.width * editorScale;
 
                 const textDiv = document.createElement('div');
                 textDiv.className = 'editable-text-item modified';
@@ -1602,8 +1632,22 @@ function closeTextEditor() {
     activeEditingPageId = null;
     currentTextContentItems = [];
     currentViewport = null;
+    lastPageId = null; // Reset so next open recalculates page fit
     editorTextLayer.innerHTML = '';
     disableAddTextMode();
+}
+
+function zoomEditor(factor) {
+    if (!activeEditingPageId) return;
+    
+    // Save current modifications to memory first to avoid losing them
+    saveTextEdits(false);
+    
+    // Adjust scale within reasonable bounds (e.g. 0.35 to 3.0)
+    editorScale = Math.max(0.35, Math.min(3.0, editorScale + factor));
+    
+    // Re-render editor with updated scale
+    openTextEditor(activeEditingPageId);
 }
 
 function disableAddTextMode() {
@@ -1629,7 +1673,7 @@ function handleWorkspaceClick(e) {
     // Create a new text block
     const newIndex = `new-${Date.now()}`;
     const defaultFontSize = 14; 
-    const fontSizeView = defaultFontSize * 1.5; 
+    const fontSizeView = defaultFontSize * editorScale; 
 
     const newTextDiv = document.createElement('div');
     newTextDiv.className = 'editable-text-item modified';
@@ -1738,8 +1782,8 @@ function saveTextEdits(shouldCloseModal = true) {
                     newText: newText,
                     x: x,
                     y: y,
-                    width: el.offsetWidth / 1.5, // Convert viewport pixels back to PDF points
-                    height: el.offsetHeight / 1.5,
+                    width: el.offsetWidth / editorScale, // Convert viewport pixels back to PDF points
+                    height: el.offsetHeight / editorScale,
                     fontSize: fontSize,
                     fontName: "Helvetica"
                 });
