@@ -1,5 +1,4 @@
-name = "mellow-pdf"
+name = "pdfmellow"
 compatibility_date = "2026-06-18"
 
-[site]
-bucket = "."
+pages_build_output_dir = "."

@@ -148,6 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.addEventListener('click', () => {
             const mode = card.getAttribute('data-action');
             selectAppMode(mode);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     });
 
@@ -156,6 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
         backToDashboardBtn.addEventListener('click', () => {
             currentAppMode = null;
             toggleLoading(false);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }
 
@@ -165,6 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
             clearWorkspace();
             currentAppMode = null;
             toggleLoading(false);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }
     
@@ -473,6 +476,7 @@ function toggleLoading(show, text = 'Processing PDF pages locally...') {
             if (featureInfo) featureInfo.style.display = 'none';
             if (faqSection) faqSection.style.display = 'none';
             applyModeLimitations();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
             if (activeWorkspace) activeWorkspace.style.display = 'none';
             if (currentAppMode) {
