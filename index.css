@@ -766,6 +766,20 @@ footer {
     color: var(--text-primary);
 }
 
+.footer-contact-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--accent-solid) !important;
+    font-weight: 600;
+    transition: all 0.2s ease !important;
+}
+
+.footer-contact-link:hover {
+    color: var(--accent-purple) !important;
+    transform: translateY(-1px);
+}
+
 .footer-dot {
     width: 4px;
     height: 4px;
