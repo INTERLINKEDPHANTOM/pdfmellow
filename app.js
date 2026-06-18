@@ -113,6 +113,12 @@ const editorAddTextBtn = document.getElementById('editor-add-text-btn');
 const editorPrevBtn = document.getElementById('editor-prev-btn');
 const editorNextBtn = document.getElementById('editor-next-btn');
 
+// Mobile Editor Elements
+const mobileEditorCancelBtn = document.getElementById('mobile-editor-cancel-btn');
+const mobileEditorSaveBtn = document.getElementById('mobile-editor-save-btn');
+const mobileEditorRotateBtn = document.getElementById('mobile-editor-rotate-btn');
+const mobileEditorDeleteBtn = document.getElementById('mobile-editor-delete-btn');
+
 // Workspace Settings Sidebar Elements
 const workspaceSettingsSidebar = document.getElementById('workspace-settings-sidebar');
 const watermarkSettingsCard = document.getElementById('watermark-settings-card');
@@ -244,6 +250,20 @@ document.addEventListener('DOMContentLoaded', () => {
         editorModalCloseBtn.addEventListener('click', closeTextEditor);
     }
     editorSaveBtn.addEventListener('click', saveTextEdits);
+
+    // Mobile Editor Button Events
+    if (mobileEditorCancelBtn) {
+        mobileEditorCancelBtn.addEventListener('click', closeTextEditor);
+    }
+    if (mobileEditorSaveBtn) {
+        mobileEditorSaveBtn.addEventListener('click', saveTextEdits);
+    }
+    if (mobileEditorRotateBtn) {
+        mobileEditorRotateBtn.addEventListener('click', editorRotateActivePage);
+    }
+    if (mobileEditorDeleteBtn) {
+        mobileEditorDeleteBtn.addEventListener('click', editorDeleteActivePage);
+    }
 
     // Watermark Settings Listeners
     if (wmTextInput) {

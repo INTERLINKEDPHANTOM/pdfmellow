@@ -553,6 +553,11 @@
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
+            <!-- Mobile-only Floating Header Banner -->
+            <div class="mobile-editor-header">
+                <i class="fa-solid fa-lightbulb" style="color: #fb8500;"></i> Select any text to edit
+            </div>
+
             <!-- Left Side: Interactive Page View (Flex grow) -->
             <div class="editor-canvas-wrapper">
                 <div id="editor-workspace" class="editor-workspace-container">
@@ -563,6 +568,24 @@
                 <div id="editor-loading" class="loading-indicator" style="display: flex; margin: auto;">
                     <div class="spinner"></div>
                     <div class="loading-text">Extracting document text layer...</div>
+                </div>
+
+                <!-- Mobile-only Floating Footer Bar -->
+                <div class="mobile-editor-footer">
+                    <button id="mobile-editor-cancel-btn" class="btn-secondary" title="Cancel changes">
+                        Cancel
+                    </button>
+                    <div class="mobile-editor-tools-group">
+                        <button id="mobile-editor-rotate-btn" class="btn-secondary" title="Rotate page 90 degrees">
+                            <i class="fa-solid fa-rotate"></i>
+                        </button>
+                        <button id="mobile-editor-delete-btn" class="btn-danger" style="background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); color: #ef4444;" title="Delete page">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                    <button id="mobile-editor-save-btn" class="btn-primary" style="background: #fb8500; color: #000; font-weight: 700;" title="Apply changes">
+                        Apply
+                    </button>
                 </div>
             </div>
 
