@@ -1,6 +1,16 @@
 // Set up PDF.js Global Worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
+/**
+ * Normalize any rotation value to a valid PDF.js rotation:
+ * must be a multiple of 90, in the range [0, 270].
+ * Handles undefined/null/NaN/floats/negative values gracefully.
+ */
+function safeRotation(degrees) {
+    const val = Math.round(Number(degrees) || 0);
+    return ((val % 360) + 360) % 360; // always positive, then clamp to 0/90/180/270
+}
+
 // Application State
 let loadedFiles = []; // Array of { id, name, data (Uint8Array) }
 let pageList = [];   // Array of { id, fileId, originalPageNum, localRotation (0, 90, 180, 270), textEdits: [] }
@@ -1821,7 +1831,7 @@ async function exportPDF() {
                 
                 const viewport = page.getViewport({ 
                     scale: renderScale, 
-                    rotation: (page.rotation + pageItem.localRotation) % 360 
+                    rotation: safeRotation(safeRotation(page.rotation) + pageItem.localRotation)
                 });
                 
                 canvas.width = viewport.width;
@@ -1843,7 +1853,7 @@ async function exportPDF() {
                 // Create a page with the target dimensions
                 const origViewport = page.getViewport({ 
                     scale: 1.0, 
-                    rotation: (page.rotation + pageItem.localRotation) % 360 
+                    rotation: safeRotation(safeRotation(page.rotation) + pageItem.localRotation)
                 });
                 const newPage = mergedPdf.addPage([origViewport.width, origViewport.height]);
                 
@@ -1933,8 +1943,8 @@ async function exportPDF() {
                 }
     
                 // Apply original page rotation plus local rotation additions
-                const currentRotationAngle = copiedPage.getRotation().angle;
-                const newRotation = (currentRotationAngle + pageItem.localRotation) % 360;
+                const currentRotationAngle = safeRotation(copiedPage.getRotation().angle);
+                const newRotation = safeRotation(currentRotationAngle + pageItem.localRotation);
                 copiedPage.setRotation(PDFLib.degrees(newRotation));
     
                 // Apply Watermark if in watermark mode
@@ -2134,8 +2144,8 @@ async function extractSelectedPages() {
             }
 
             // Apply original page rotation plus local rotation additions
-            const currentRotationAngle = copiedPage.getRotation().angle;
-            const newRotation = (currentRotationAngle + pageItem.localRotation) % 360;
+            const currentRotationAngle = safeRotation(copiedPage.getRotation().angle);
+            const newRotation = safeRotation(currentRotationAngle + pageItem.localRotation);
             copiedPage.setRotation(PDFLib.degrees(newRotation));
 
             // Apply Watermark if in watermark mode
