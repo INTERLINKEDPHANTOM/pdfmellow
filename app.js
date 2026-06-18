@@ -36,6 +36,7 @@ let watermarkConfig = {
 };
 
 let pageNumConfig = {
+    enabled: false,
     format: 'simple',
     position: 'bottom-center',
     size: 10,
@@ -140,6 +141,7 @@ const pnPositionSelect = document.getElementById('pn-position-select');
 const pnSizeInput = document.getElementById('pn-size-input');
 const pnSizeVal = document.getElementById('pn-size-val');
 const pnColorInput = document.getElementById('pn-color-input');
+const pnEnableCheckbox = document.getElementById('pn-enable-checkbox');
 const editorPageIndicator = document.getElementById('editor-page-indicator');
 const editorModeStatus = document.getElementById('editor-mode-status');
 const editorRotateBtn = document.getElementById('editor-rotate-btn');
@@ -338,6 +340,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (pnColorInput) {
         pnColorInput.addEventListener('input', (e) => {
             pageNumConfig.color = e.target.value;
+        });
+    }
+    if (pnEnableCheckbox) {
+        pnEnableCheckbox.addEventListener('change', (e) => {
+            pageNumConfig.enabled = e.target.checked;
         });
     }
 
@@ -678,6 +685,12 @@ function selectAppMode(mode) {
         }
     }
     
+    // Configure default page numbering enabled status based on mode
+    pageNumConfig.enabled = (mode === 'pagenum');
+    if (pnEnableCheckbox) {
+        pnEnableCheckbox.checked = pageNumConfig.enabled;
+    }
+
     toggleLoading(false);
 }
 
@@ -798,7 +811,7 @@ function applyModeLimitations() {
             if (watermarkCard) watermarkCard.style.display = 'flex';
             if (pagenumCard) pagenumCard.style.display = 'none';
             if (compressSettingsCard) compressSettingsCard.style.display = 'none';
-        } else if (currentAppMode === 'pagenum') {
+        } else if (currentAppMode === 'pagenum' || currentAppMode === 'merge') {
             sidebar.style.display = 'flex';
             if (watermarkCard) watermarkCard.style.display = 'none';
             if (pagenumCard) pagenumCard.style.display = 'flex';
@@ -838,13 +851,13 @@ function applyModeLimitations() {
     const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
     
     if (bulkExtractBtn) {
-        bulkExtractBtn.style.display = (isAllEdit || currentAppMode === 'extract') ? 'inline-flex' : 'none';
+        bulkExtractBtn.style.display = (isAllEdit || ['extract', 'merge', 'rearrange'].includes(currentAppMode)) ? 'inline-flex' : 'none';
     }
     if (bulkRotateBtn) {
         bulkRotateBtn.style.display = (isAllEdit || currentAppMode === 'rotate') ? 'inline-flex' : 'none';
     }
     if (bulkDeleteBtn) {
-        bulkDeleteBtn.style.display = (isAllEdit || currentAppMode === 'delete') ? 'inline-flex' : 'none';
+        bulkDeleteBtn.style.display = (isAllEdit || ['delete', 'merge', 'rearrange'].includes(currentAppMode)) ? 'inline-flex' : 'none';
     }
 
     // 4. Update Workspace Header Title/Desc
@@ -937,7 +950,7 @@ function createPageCardElement(pageItem) {
     selectContainer.className = 'page-select-container';
     
     // Checkbox container visibility based on mode
-    const showCheckbox = isAllEdit || ['rotate', 'delete', 'extract'].includes(currentAppMode);
+    const showCheckbox = isAllEdit || ['rotate', 'delete', 'extract', 'merge', 'rearrange'].includes(currentAppMode);
     selectContainer.style.display = showCheckbox ? 'block' : 'none';
 
     const checkbox = document.createElement('input');
@@ -1059,7 +1072,7 @@ function createPageCardElement(pageItem) {
     btnDelete.className = 'control-btn btn-delete';
     btnDelete.innerHTML = '<i class="fa-solid fa-trash"></i>';
     btnDelete.title = 'Remove Page';
-    btnDelete.style.display = (isAllEdit || currentAppMode === 'delete') ? 'inline-flex' : 'none';
+    btnDelete.style.display = (isAllEdit || ['delete', 'merge', 'rearrange'].includes(currentAppMode)) ? 'inline-flex' : 'none';
     btnDelete.addEventListener('click', (e) => {
         e.stopPropagation();
         removePage(pageItem.id);
@@ -1083,7 +1096,7 @@ function createPageCardElement(pageItem) {
     controls.appendChild(btnRight);
 
     // Hide controls if none are shown to save vertical space
-    const anyControlShown = showRearrange || isAllEdit || currentAppMode === 'rotate' || currentAppMode === 'edit-text' || currentAppMode === 'delete';
+    const anyControlShown = showRearrange || isAllEdit || currentAppMode === 'rotate' || currentAppMode === 'edit-text' || ['delete', 'merge', 'rearrange'].includes(currentAppMode);
     if (!anyControlShown) {
         controls.style.display = 'none';
     } else {
@@ -2075,8 +2088,8 @@ async function exportPDF() {
                     });
                 }
     
-                // Apply Page Numbers if in pagenum mode
-                if (currentAppMode === 'pagenum') {
+                // Apply Page Numbers if in pagenum mode or enabled manually (e.g. in merge mode)
+                if (currentAppMode === 'pagenum' || pageNumConfig.enabled) {
                     const { width, height } = copiedPage.getSize();
                     const pnFont = await mergedPdf.embedFont(PDFLib.StandardFonts.Helvetica);
                     
@@ -2272,8 +2285,8 @@ async function extractSelectedPages() {
                 });
             }
 
-            // Apply Page Numbers if in pagenum mode
-            if (currentAppMode === 'pagenum') {
+            // Apply Page Numbers if in pagenum mode or enabled manually (e.g. in merge mode)
+            if (currentAppMode === 'pagenum' || pageNumConfig.enabled) {
                 const { width, height } = copiedPage.getSize();
                 const pnFont = await extractedPdf.embedFont(PDFLib.StandardFonts.Helvetica);
                 

@@ -1,7 +1,7 @@
 // MellowPDF Service Worker — Cache-First Strategy
 // Caches all assets on install so the app works 100% offline
 
-const CACHE_NAME = 'mellowpdf-v2';
+const CACHE_NAME = 'mellowpdf-v3';
 
 // Local assets to pre-cache on install
 const PRECACHE_ASSETS = [
