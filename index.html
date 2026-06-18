@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MellowPDF — Premium Serverless Client-Side PDF Editor</title>
+    <meta name="description" content="Merge, split, rotate, rearrange, and edit PDF text 100% locally. Safe, private client-side PDF workspace brought to you by Mellowkraft.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+    
+    <!-- SEO and Social Previews -->
+    <meta property="og:title" content="MellowPDF — Serverless Local PDF Workspace">
+    <meta property="og:description" content="Manage and edit your sensitive PDF documents without server uploads. Secure, fast, and 100% local.">
+    <meta property="og:type" content="website">
+    
+    <!-- Styling & Icons -->
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- PDF Processing Libraries (Loaded via CDN) -->
+    <!-- PDF-Lib for compiling and editing -->
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <!-- PDF.js for rendering PDF page previews -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header Section -->
+        <header>
+            <div class="logo-section">
+                <span class="logo-icon"><i class="fa-solid fa-bolt"></i></span>
+                <div class="logo-details">
+                    <h1 class="logo-text">MellowPDF</h1>
+                    <span class="logo-subtitle">by mellowkraft</span>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <button id="coffee-donate-btn" class="coffee-donate-btn" title="Buy the developer a coffee">
+                    <i class="fa-solid fa-mug-hot"></i>
+                    <span>Buy the developer a coffee</span>
+                </button>
+                <button id="privacy-shield-btn" class="privacy-shield" title="Click to verify offline functionality">
+                    <span class="shield-pulse"></span>
+                    <span>Serverless Client-Side Sandbox</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="workspace-wrapper">
+            
+            <!-- Quick Actions Dashboard -->
+            <div id="actions-dashboard" class="actions-dashboard">
+                <div class="dashboard-header">
+                    <h2 class="handwritten-title">All your PDF business on <span class="marker-highlight">one platform.</span></h2>
+                    <p class="handwritten-subtitle">Simple, efficient, yet <span class="marker-underline">affordable!</span></p>
+                </div>
+                
+                <div class="dashboard-grid">
+                    <div class="action-card highlight-card" data-action="all-edit">
+                        <div class="action-card-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+                        <h3>All Edit Tool</h3>
+                        <p>Combine, rotate, extract, and delete pages from multiple documents together.</p>
+                        <span class="action-card-btn">Get Started <i class="fa-solid fa-arrow-right-long"></i></span>
+                    </div>
+                    
+                    <div class="action-card" data-action="merge">
+                        <div class="action-card-icon"><i class="fa-solid fa-layer-group"></i></div>
+                        <h3>Merge PDFs</h3>
+                        <p>Combine multiple files into a single document in any order.</p>
+                        <span class="action-card-btn">Get Started <i class="fa-solid fa-arrow-right-long"></i></span>
+                    </div>
+                    
+                    <div class="action-card" data-action="rearrange">
+                        <div class="action-card-icon"><i class="fa-solid fa-arrows-left-right-to-line"></i></div>
+                        <h3>Rearrange Pages</h3>
+                        <p>Drag and drop page previews to reorder pages in your document.</p>
+                        <span class="action-card-btn">Get Started <i class="fa-solid fa-arrow-right-long"></i></span>
+                    </div>
+                    
+                    <div class="action-card" data-action="compress">
+                        <div class="action-card-icon"><i class="fa-solid fa-compress"></i></div>
+                        <h3>Compress PDF</h3>
+                        <p>Reduce the file size of your PDF documents with customizable quality levels.</p>
+                        <span class="action-card-btn">Get Started <i class="fa-solid fa-arrow-right-long"></i></span>
+                    </div>
+                    
+                    <div class="action-card" data-action="edit-text">
+                        <div class="action-card-icon"><i class="fa-solid fa-signature"></i></div>
+                        <h3>Edit PDF Text</h3>
+                        <p>Modify existing text layers, append new text, or fill out forms.</p>
+                        <span class="action-card-btn">Get Started <i class="fa-solid fa-arrow-right-long"></i></span>
+                    </div>
+                    
+                    <div class="action-card" data-action="rotate">
+                        <div class="action-card-icon"><i class="fa-solid fa-rotate-right"></i></div>
+                        <h3>Rotate Pages</h3>
+                        <p>Fix upside-down pages or rotate document orientation.</p>
+                        <span class="action-card-btn">Get Started <i class="fa-solid fa-arrow-right-long"></i></span>
+                    </div>
+                    
+                    <div class="action-card" data-action="delete">
+                        <div class="action-card-icon"><i class="fa-solid fa-trash-can"></i></div>
+                        <h3>Delete Pages</h3>
+                        <p>Remove unwanted pages from your PDF file instantly.</p>
+                        <span class="action-card-btn">Get Started <i class="fa-solid fa-arrow-right-long"></i></span>
+                    </div>
+                    
+                    <div class="action-card" data-action="extract">
+                        <div class="action-card-icon"><i class="fa-solid fa-file-export"></i></div>
+                        <h3>Extract Pages</h3>
+                        <p>Select and save individual pages as a new standalone PDF file.</p>
+                        <span class="action-card-btn">Get Started <i class="fa-solid fa-arrow-right-long"></i></span>
+                    </div>
+                    
+                    <div class="action-card" data-action="watermark">
+                        <div class="action-card-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                        <h3>Watermark PDF</h3>
+                        <p>Overlay customizable text watermarks with custom rotation and transparency.</p>
+                        <span class="action-card-btn">Get Started <i class="fa-solid fa-arrow-right-long"></i></span>
+                    </div>
+                    
+                    <div class="action-card" data-action="pagenum">
+                        <div class="action-card-icon"><i class="fa-solid fa-list-ol"></i></div>
+                        <h3>Add Page Numbers</h3>
+                        <p>Automatically label page numbers in custom formats, colors, and headers/footers.</p>
+                        <span class="action-card-btn">Get Started <i class="fa-solid fa-arrow-right-long"></i></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Container (hidden by default) -->
+            <div id="upload-container" class="upload-container" style="display: none;">
+                <button type="button" id="back-to-dashboard-btn" class="btn-back">
+                    <i class="fa-solid fa-arrow-left-long"></i> Back to Actions
+                </button>
+                
+                <!-- Landing / Upload Zone (Empty Feature Screen) -->
+                <div id="upload-zone" class="feature-empty-screen">
+                    <span id="empty-badge" class="empty-badge">Universal Editor</span>
+                    
+                    <div class="empty-header">
+                        <div class="empty-icon-wrapper">
+                            <i id="empty-main-icon" class="fa-solid fa-screwdriver-wrench"></i>
+                        </div>
+                        <h2 id="upload-zone-title">All-in-One PDF Editor</h2>
+                        <p id="upload-zone-desc">Edit, combine, and organize PDF documents in a single offline workspace.</p>
+                    </div>
+
+                    <div id="empty-bullets-list" class="empty-bullets-list">
+                        <!-- Dynamically Injected Bullet Points -->
+                    </div>
+
+                    <!-- Upload Action (Plus Icon Button) -->
+                    <div class="empty-upload-zone">
+                        <button type="button" class="empty-plus-btn" id="select-btn" title="Click to Add PDFs">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                        <p class="empty-upload-helper">Click the plus icon or drag files here to start editing</p>
+                        <input type="file" id="file-input" class="file-input" accept="application/pdf" multiple>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loading-indicator" class="loading-indicator">
+                <div class="spinner"></div>
+                <div class="loading-text" id="loading-text">Processing PDF pages locally...</div>
+            </div>
+
+            <!-- Active Editing Workspace (hidden initially) -->
+            <div id="active-workspace" class="active-workspace">
+                <button type="button" id="workspace-back-btn" class="btn-back">
+                    <i class="fa-solid fa-arrow-left-long"></i> Back to Actions
+                </button>
+                
+                <div class="workspace-header">
+                    <h3 id="workspace-title">All-in-One PDF Editor</h3>
+                    <p id="workspace-desc">Rearrange, rotate, delete, and edit pages in a single interface.</p>
+                </div>
+                
+                <!-- Selection Action Toolbar (hidden initially) -->
+                <div id="selection-toolbar" class="selection-toolbar">
+                    <div class="toolbar-left" style="display: flex; align-items: center; gap: 1rem;">
+                        <span id="selection-count" style="font-weight: 700; color: var(--accent-glow); font-size: 0.95rem;">0 page(s) selected</span>
+                        <button type="button" class="btn-secondary" id="select-all-btn" style="padding: 0.45rem 0.9rem; font-size: 0.82rem;">Select All</button>
+                        <button type="button" class="btn-secondary" id="deselect-all-btn" style="padding: 0.45rem 0.9rem; font-size: 0.82rem;">Deselect All</button>
+                    </div>
+                    
+                    <div class="toolbar-right" style="display: flex; gap: 0.8rem;">
+                        <button type="button" class="btn-primary" id="bulk-extract-btn" style="padding: 0.55rem 1.1rem; font-size: 0.88rem;">
+                            <i class="fa-solid fa-file-export"></i> Extract Selected
+                        </button>
+                        <button type="button" class="btn-secondary" id="bulk-rotate-btn" style="padding: 0.55rem 1.1rem; font-size: 0.88rem;">
+                            <i class="fa-solid fa-rotate"></i> Rotate Selected
+                        </button>
+                        <button type="button" class="btn-danger" id="bulk-delete-btn" style="padding: 0.55rem 1.1rem; font-size: 0.88rem; background: rgba(255, 51, 102, 0.15); border-color: rgba(255, 51, 102, 0.3); color: var(--accent-red);">
+                            <i class="fa-solid fa-trash-can"></i> Delete Selected
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Action Toolbar -->
+                <div class="toolbar">
+                    <div class="toolbar-left">
+                        <button class="btn-secondary" id="add-more-btn">
+                            <i class="fa-solid fa-plus"></i> Add More PDFs
+                        </button>
+                        <input type="file" id="add-more-input" class="file-input" accept="application/pdf" multiple>
+                        
+                        <button class="btn-secondary" id="rotate-all-btn">
+                            <i class="fa-solid fa-rotate-right"></i> Rotate All
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-right">
+                        <button class="btn-danger" id="clear-all-btn">
+                            <i class="fa-solid fa-trash-can"></i> Clear All
+                        </button>
+                        <button class="btn-primary" id="download-btn">
+                            <i class="fa-solid fa-download"></i> Save & Export
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Workspace Layout Wrapper -->
+                <div class="workspace-main-layout">
+                    <!-- Grid of Rendered PDF Pages -->
+                    <div id="pages-grid" class="pages-grid"></div>
+                    
+                    <!-- Settings Sidebar (shown when in Watermark or Page Numbers modes) -->
+                    <aside id="workspace-settings-sidebar" class="settings-sidebar" style="display: none;">
+                        <!-- Watermark Configuration Card -->
+                        <div id="watermark-settings-card" class="settings-card" style="display: none;">
+                            <div class="settings-card-header">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                <h4>Watermark Settings</h4>
+                            </div>
+                            <div class="settings-group">
+                                <label for="wm-text-input">Watermark Text</label>
+                                <input type="text" id="wm-text-input" placeholder="CONFIDENTIAL" value="CONFIDENTIAL">
+                            </div>
+                            <div class="settings-group">
+                                <label for="wm-size-input">Font Size (<span id="wm-size-val">48</span>px)</label>
+                                <input type="range" id="wm-size-input" min="12" max="72" value="48">
+                            </div>
+                            <div class="settings-group">
+                                <label for="wm-color-input">Color & Opacity</label>
+                                <div class="color-opacity-row">
+                                    <input type="color" id="wm-color-input" value="#ff0000">
+                                    <div class="slider-wrapper">
+                                        <input type="range" id="wm-opacity-input" min="0.05" max="0.8" step="0.05" value="0.15">
+                                        <span class="opacity-percentage"><span id="wm-opacity-val">15</span>%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="settings-group">
+                                <label for="wm-rotation-input">Rotation (<span id="wm-rotation-val">45</span>°)</label>
+                                <input type="range" id="wm-rotation-input" min="-90" max="90" value="45">
+                            </div>
+                        </div>
+
+                        <!-- Page Numbers Configuration Card -->
+                        <div id="pagenum-settings-card" class="settings-card" style="display: none;">
+                            <div class="settings-card-header">
+                                <i class="fa-solid fa-list-ol"></i>
+                                <h4>Page Numbers</h4>
+                            </div>
+                            <div class="settings-group">
+                                <label for="pn-format-select">Format</label>
+                                <select id="pn-format-select">
+                                    <option value="simple">1, 2, 3</option>
+                                    <option value="prefix">Page 1, Page 2</option>
+                                    <option value="total">Page 1 of Y</option>
+                                </select>
+                            </div>
+                            <div class="settings-group">
+                                <label for="pn-position-select">Position</label>
+                                <select id="pn-position-select">
+                                    <option value="bottom-center">Bottom Center</option>
+                                    <option value="bottom-right">Bottom Right</option>
+                                    <option value="bottom-left">Bottom Left</option>
+                                    <option value="top-center">Top Center</option>
+                                    <option value="top-right">Top Right</option>
+                                    <option value="top-left">Top Left</option>
+                                </select>
+                            </div>
+                            <div class="settings-group">
+                                <label for="pn-size-input">Font Size (<span id="pn-size-val">10</span>px)</label>
+                                <input type="range" id="pn-size-input" min="8" max="20" value="10">
+                            </div>
+                            <div class="settings-group">
+                                <label for="pn-color-input">Color</label>
+                                <input type="color" id="pn-color-input" value="#9ca3af">
+                            </div>
+                        </div>
+
+                        <!-- PDF Compression Configuration Card -->
+                        <div id="compress-settings-card" class="settings-card" style="display: none;">
+                            <div class="settings-card-header">
+                                <i class="fa-solid fa-file-arrow-down"></i>
+                                <h4>Compression Settings</h4>
+                            </div>
+                            <div class="settings-group">
+                                <label for="comp-level-input">Compression Quality (<span id="comp-level-val">60</span>%)</label>
+                                <input type="range" id="comp-level-input" min="10" max="90" step="5" value="60">
+                            </div>
+                            <div class="settings-group">
+                                <label>Compression Info</label>
+                                <div class="compression-stats-panel">
+                                    <div class="stat-row">
+                                        <span class="stat-label">Original Size:</span>
+                                        <span id="comp-orig-size" class="stat-value">0 KB</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span class="stat-label">Estimated Size:</span>
+                                        <span id="comp-est-size" class="stat-value text-accent-orange">0 KB</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span class="stat-label">Estimated Saving:</span>
+                                        <span id="comp-reduction" class="stat-value text-accent-green">0%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+
+            <!-- Landing Features List (hidden when active workspace is showing) -->
+            <div id="feature-info" class="feature-info">
+                <div class="feature-card">
+                    <div class="feature-card-icon"><i class="fa-solid fa-user-lock"></i></div>
+                    <h4>100% Offline Privacy</h4>
+                    <p>No upload bandwidth used. Files stay in your browser. Perfect for HIPAA compliance, tax data, and legal files.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card-icon"><i class="fa-solid fa-arrows-spin"></i></div>
+                    <h4>Rearrange & Rotate</h4>
+                    <p>Drag and drop pages to reorder them. Rotate pages that were scanned upside down. Remove unwanted pages.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card-icon"><i class="fa-solid fa-object-group"></i></div>
+                    <h4>Merge Multiple Files</h4>
+                    <p>Combine multiple PDFs into a single document instantly. Combine templates, signatures, and attachments.</p>
+                </div>
+            </div>
+
+            <!-- Interactive FAQ Section -->
+            <section class="faq-section" id="faq-section">
+                <div class="faq-header">
+                    <h2>Frequently Asked Questions</h2>
+                    <p>Everything you need to know about MellowPDF’s privacy, capabilities, and local execution.</p>
+                </div>
+                
+                <div class="faq-container">
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>Is MellowPDF really safe for sensitive documents?</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Absolutely. MellowPDF is designed with a serverless execution flow. Every operation (merging pages, editing text, watermarking, page rotation, and extraction) runs 100% locally in your web browser. Your document files are never transmitted to any external servers, databases, or API relays.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>How can I verify that my files are processed locally?</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>You can verify this easily by disconnecting your internet connection (Wi-Fi/Ethernet) and using the editor completely offline. You will find that all features—including rendering PDF thumbnails, text editing, and PDF compilation—continue to work. You can open the Privacy Verification link in the footer to read more about this test.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>Are there any limits on file sizes or page counts?</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>No, there are no limitations. Since the processing runs locally on your own computer, the speed and page count limits are only restricted by your computer's RAM and CPU performance. It is completely free for personal and commercial projects.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>How does the WYSIWYG text editor work?</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>When you edit a page, MellowPDF uses PDF.js to extract the text coordinates and font styling properties. When you save your modifications, the compiler masks the original text using a solid white background and redraws the new text in its place, using font styles matched to the document's original typography.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer>
+            <div class="footer-left">
+                <span>&copy; 2026 MellowPDF by <a href="https://mellowkraft.com" target="_blank" class="mellowkraft-link">mellowkraft</a>. All rights reserved.</span>
+                <span class="footer-love-msg">Made with love by your Shiv <span class="heart-pulse">❤️</span></span>
+            </div>
+            <div class="footer-right">
+                <a href="#" id="privacy-policy-link">Privacy Policy</a>
+                <span class="footer-dot"></span>
+                <a href="#" id="terms-link">Terms of Service</a>
+                <span class="footer-dot"></span>
+                <a href="#" id="offline-test-link"><i class="fa-solid fa-circle-nodes"></i> Privacy Sandbox Test</a>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Buy the Developer a Coffee Modal -->
+    <div id="coffee-donate-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content donate-modal-content">
+            <div class="modal-icon-wrap" style="color: var(--accent-solid); font-size: 2.2rem; display: flex; align-items: center; justify-content: center; height: 60px; width: 60px; border-radius: 50%; background: rgba(251, 133, 0, 0.1); margin: 0 auto 1rem auto;">
+                <i class="fa-solid fa-mug-hot"></i>
+            </div>
+            <h3>Buy the Developer a Coffee</h3>
+            <p class="donate-subtitle">If you like MellowPDF and want to support its developer, scan the UPI QR code below!</p>
+            
+            <div class="qr-code-wrapper">
+                <img src="upi_qr.png" alt="UPI ID: mellowcodestudios-1@okhdfcbank" class="upi-qr-img">
+            </div>
+            
+            <div class="upi-id-badge">
+                <span class="upi-label">UPI ID:</span>
+                <span class="upi-val">mellowcodestudios-1@okhdfcbank</span>
+            </div>
+            
+            <button class="btn-primary" id="coffee-close-btn" style="margin-top: 1.5rem; width: 100%;">Close</button>
+        </div>
+    </div>
+
+    <!-- Secret Love Easter Egg Modal -->
+    <div id="love-easter-egg-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content love-modal-content">
+            <div class="love-hearts-float">
+                <i class="fa-solid fa-heart floating-heart-1"></i>
+                <i class="fa-solid fa-heart floating-heart-2"></i>
+                <i class="fa-solid fa-heart floating-heart-3"></i>
+            </div>
+            <div class="love-avatar-wrap">
+                <div class="love-avatar shiv-avatar">S</div>
+                <div class="love-heart-divider"><i class="fa-solid fa-heart-pulse"></i></div>
+                <div class="love-avatar divi-avatar">D</div>
+            </div>
+            <h3 class="love-title">Shiv ❤️ Divi</h3>
+            <p class="love-message">You found the secret chamber of love! This application is dedicated to Divi, the most special person in the developer's universe. Thank you for being my constant inspiration. ✨</p>
+            <button class="btn-primary btn-love" id="love-close-btn">Close with Love</button>
+        </div>
+    </div>
+
+    <!-- Modal for Offline Privacy Test -->
+    <div id="privacy-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-icon" style="color: var(--accent-glow);"><i class="fa-solid fa-circle-check"></i></div>
+            <h3>Privacy Verification</h3>
+            <p>To prove that MellowPDF is 100% serverless and private, you can test it offline:</p>
+            <p style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); padding: 0.8rem; border-radius: 8px; font-family: monospace; font-size: 0.9rem; text-align: left;">
+                1. Disconnect your Wi-Fi or Internet.<br>
+                2. Upload, merge, split, or edit a PDF page.<br>
+                3. Save and Export to download your result.
+            </p>
+            <p>All document reading, rendering, text overlay editing, and compiler building execute inside your browser sandbox. No server is used!</p>
+            <button class="btn-primary" id="modal-close-btn" style="margin-top: 0.5rem;">Got It</button>
+        </div>
+    </div>
+
+    <!-- Tabbed Modal for Privacy Policy & Terms of Service -->
+    <div id="legal-modal" class="modal-overlay" style="display: none;">
+        <div class="legal-modal-content">
+            <div class="legal-modal-header">
+                <div class="legal-tabs">
+                    <button class="legal-tab-btn active" data-tab="privacy-policy-tab">Privacy Policy</button>
+                    <button class="legal-tab-btn" data-tab="terms-tab">Terms of Service</button>
+                </div>
+                <button id="legal-modal-close" class="legal-close-btn">&times;</button>
+            </div>
+            <div class="legal-modal-body">
+                <!-- Tab: Privacy Policy -->
+                <div id="privacy-policy-tab" class="legal-tab-content active">
+                    <h3>Privacy Policy</h3>
+                    <p class="legal-update-date">Last Updated: June 18, 2026</p>
+                    <p>At MellowPDF (a product of Mellowkraft), we take your privacy extremely seriously. We want to be entirely clear: <strong>we do not collect, store, transmit, or share any of your files or personal data.</strong></p>
+                    
+                    <h4>1. 100% Client-Side Processing</h4>
+                    <p>All processing, including loading, rendering, reordering, rotating, page deletion, page extraction, text editing, watermarking, and document compilation, occurs <strong>locally in your browser's execution memory</strong> using standard WebAssembly and client-side JavaScript libraries.</p>
+                    
+                    <h4>2. Zero Server Transmission</h4>
+                    <p>Your document files never leave your computer. There are no server uploads, cloud storage, API relays, or remote processing servers involved in the workflow. You can disconnect your network connection entirely and continue to use the application.</p>
+                    
+                    <h4>3. Cookies and Analytics</h4>
+                    <p>MellowPDF does not use cookies, tracking pixels, or third-party behavioral analytics scripts. Your interaction with the editor is completely private and anonymous.</p>
+                    
+                    <h4>4. Contact Us</h4>
+                    <p>If you have any questions or feedback regarding this policy or our privacy practices, please contact us at <a href="mailto:hello@mellowkraft.com" style="color: var(--accent-glow); text-decoration: none;">hello@mellowkraft.com</a>.</p>
+                </div>
+                
+                <!-- Tab: Terms of Service -->
+                <div id="terms-tab" class="legal-tab-content" style="display: none;">
+                    <h3>Terms of Service</h3>
+                    <p class="legal-update-date">Last Updated: June 18, 2026</p>
+                    <p>Welcome to MellowPDF! By using this website, you agree to comply with and be bound by the following Terms of Service. Please read them carefully.</p>
+                    
+                    <h4>1. Usage License</h4>
+                    <p>Mellowkraft grants you a non-exclusive, worldwide, royalty-free license to use MellowPDF for personal, educational, professional, and commercial purposes. There are no limits on file sizes, page counts, or number of operations.</p>
+                    
+                    <h4>2. Privacy & Secure Processing</h4>
+                    <p>All tool actions operate locally within your browser sandbox. You acknowledge that you retain full custody and ownership of your files. No copies are created on any servers.</p>
+                    
+                    <h4>3. Disclaimer of Warranties</h4>
+                    <p>MellowPDF is provided on an "as-is" and "as-available" basis. Mellowkraft makes no representations or warranties of any kind, express or implied, regarding the operation of the tool or the integrity of compiled outputs. We recommend maintaining backups of all original documents.</p>
+                    
+                    <h4>4. Limitation of Liability</h4>
+                    <p>In no event shall Mellowkraft, its directors, employees, or partners be liable for any direct, indirect, incidental, special, or consequential damages arising out of or in connection with your use of MellowPDF.</p>
+                    
+                    <h4>5. Governing Law</h4>
+                    <p>These terms shall be governed by and construed in accordance with the laws applicable to Mellowkraft's operating jurisdiction, without regard to conflict of law provisions.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for PDF Text Editor -->
+    <div id="editor-modal" class="modal-overlay">
+        <div class="editor-modal-content">
+            <!-- Left Side: Interactive Page View (Flex grow) -->
+            <div class="editor-canvas-wrapper">
+                <div id="editor-workspace" class="editor-workspace-container">
+                    <canvas id="editor-canvas"></canvas>
+                    <div id="editor-text-layer" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2;"></div>
+                </div>
+                <!-- Loading State inside Workspace -->
+                <div id="editor-loading" class="loading-indicator" style="display: flex; margin: auto;">
+                    <div class="spinner"></div>
+                    <div class="loading-text">Extracting document text layer...</div>
+                </div>
+            </div>
+
+            <!-- Right Side: Sidebar Panel (Fixed width) -->
+            <div class="editor-sidebar">
+                <!-- Top Section: Title and Controls -->
+                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div class="editor-title-section">
+                        <h3 id="editor-modal-title">Edit Page Text</h3>
+                        <span class="privacy-shield" style="font-size: 0.75rem; padding: 0.3rem 0.8rem; margin-top: 0.5rem; display: inline-flex; border-color: rgba(255, 183, 3, 0.2); background: rgba(255, 183, 3, 0.05); color: var(--accent-glow);">
+                            <span class="shield-pulse" style="background: var(--accent-glow); box-shadow: 0 0 8px var(--accent-glow);"></span> Serverless Local Sandbox
+                        </span>
+                    </div>
+
+                    <div class="editor-info-banner">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span>Double-click any text highlighted on the page to edit it. Modifications match the original style.</span>
+                    </div>
+
+                    <!-- Editor Tools Section -->
+                    <div class="editor-tools-group">
+                        <div class="editor-section-title">Tools</div>
+                        <button id="editor-add-text-btn" class="btn-secondary" title="Click then click anywhere on page to place new text">
+                            <i class="fa-solid fa-square-plus"></i> Add Text Anywhere
+                        </button>
+                        <span id="editor-mode-status" class="editor-mode-badge">
+                            <i class="fa-solid fa-crosshairs"></i> Click on page to place text...
+                        </span>
+                        <div style="display: flex; gap: 0.6rem;">
+                            <button id="editor-rotate-btn" class="btn-secondary" title="Rotate page 90 degrees clockwise">
+                                <i class="fa-solid fa-rotate"></i> Rotate
+                            </button>
+                            <button id="editor-delete-btn" class="btn-secondary" title="Delete this page from document">
+                                <i class="fa-solid fa-trash-can"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Page Navigation Section -->
+                    <div class="editor-nav-section">
+                        <div class="editor-section-title">Page Navigation</div>
+                        <div class="editor-nav-controls">
+                            <button class="btn-secondary" id="editor-prev-btn">
+                                <i class="fa-solid fa-chevron-left"></i> Back
+                            </button>
+                            <span id="editor-page-indicator" class="editor-page-badge">Page 1 of 1</span>
+                            <button class="btn-secondary" id="editor-next-btn">
+                                Next <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Section: Actions -->
+                <div class="editor-actions-group">
+                    <button class="btn-primary" id="editor-save-btn">
+                        <i class="fa-solid fa-check"></i> Apply Changes
+                    </button>
+                    <button class="btn-secondary" id="editor-cancel-btn">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confetti Overlay Canvas -->
+    <canvas id="confetti-canvas" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; display: none;"></canvas>
+
+    <!-- Export Filename Modal -->
+    <div id="export-filename-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content filename-prompt-modal">
+            <div class="modal-icon-wrap" style="color: var(--accent-solid); font-size: 2.2rem; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; height: 60px; width: 60px; border-radius: 50%; background: rgba(251, 133, 0, 0.1); margin: 0 auto;">
+                <i class="fa-solid fa-file-signature"></i>
+            </div>
+            <h3>Name Your PDF File</h3>
+            <p class="success-subtitle">Enter a name for your compiled PDF document.</p>
+            
+            <div class="filename-input-container">
+                <input type="text" id="export-filename-input" class="filename-input" placeholder="document">
+                <span class="file-extension-suffix">.pdf</span>
+            </div>
+
+            <div class="success-buttons">
+                <button id="export-confirm-btn" class="btn-primary btn-spring">
+                    <i class="fa-solid fa-check"></i> Export Document
+                </button>
+                <button id="export-cancel-btn" class="btn-secondary">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Receipt Modal -->
+    <div id="success-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content success-card-modal">
+            <div class="success-icon-wrap">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h3>Compilation Success!</h3>
+            <p class="success-subtitle">Your PDF has been compiled and downloaded successfully.</p>
+            
+            <div class="receipt-details">
+                <div class="receipt-row">
+                    <span class="receipt-label">Filename</span>
+                    <span id="receipt-filename" class="receipt-val">document.pdf</span>
+                </div>
+                <div class="receipt-row">
+                    <span class="receipt-label">Total Pages</span>
+                    <span id="receipt-pages" class="receipt-val">0</span>
+                </div>
+                <div class="receipt-row" id="receipt-orig-row" style="display: none;">
+                    <span class="receipt-label">Original Size</span>
+                    <span id="receipt-orig-size" class="receipt-val">0 KB</span>
+                </div>
+                <div class="receipt-row">
+                    <span class="receipt-label">Processed Size</span>
+                    <span id="receipt-final-size" class="receipt-val">0 KB</span>
+                </div>
+                <div class="receipt-row" id="receipt-savings-row" style="display: none;">
+                    <span class="receipt-label">Total Savings</span>
+                    <span id="receipt-savings" class="receipt-val text-success">0% smaller</span>
+                </div>
+            </div>
+
+            <div class="success-buttons">
+                <button id="success-download-btn" class="btn-primary btn-spring">
+                    <i class="fa-solid fa-download"></i> Download
+                </button>
+                <button id="success-close-btn" class="btn-secondary">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast Container -->
+    <div id="notification-container"></div>
+
+    <!-- Main JavaScript Logic -->
+    <script src="app.js"></script>
+</body>
+</html>

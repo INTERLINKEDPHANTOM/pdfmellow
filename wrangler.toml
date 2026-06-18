@@ -1,0 +1,5 @@
+name = "mellow-pdf"
+compatibility_date = "2026-06-18"
+
+[site]
+bucket = "."

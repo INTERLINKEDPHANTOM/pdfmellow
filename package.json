@@ -1,0 +1,8 @@
+{
+  "name": "mellow-pdf",
+  "version": "1.0.0",
+  "description": "MellowPDF — Premium Serverless Client-Side PDF Workspace by Mellowkraft",
+  "scripts": {
+    "dev": "npx -y serve ."
+  }
+}
