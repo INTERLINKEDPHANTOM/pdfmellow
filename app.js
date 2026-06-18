@@ -107,6 +107,7 @@ const editorWorkspace = document.getElementById('editor-workspace');
 const editorTextLayer = document.getElementById('editor-text-layer');
 const editorLoading = document.getElementById('editor-loading');
 const editorCancelBtn = document.getElementById('editor-cancel-btn');
+const editorModalCloseBtn = document.getElementById('editor-modal-close-btn');
 const editorSaveBtn = document.getElementById('editor-save-btn');
 const editorAddTextBtn = document.getElementById('editor-add-text-btn');
 const editorPrevBtn = document.getElementById('editor-prev-btn');
@@ -239,6 +240,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Text Editor Modal Events
     editorCancelBtn.addEventListener('click', closeTextEditor);
+    if (editorModalCloseBtn) {
+        editorModalCloseBtn.addEventListener('click', closeTextEditor);
+    }
     editorSaveBtn.addEventListener('click', saveTextEdits);
 
     // Watermark Settings Listeners
@@ -942,7 +946,10 @@ function createPageCardElement(pageItem) {
     // Clicking the thumbnail behavior depends on mode
     thumbContainer.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (showEdit) {
+        if (window.innerWidth <= 768) {
+            // On mobile, let the user click open any page
+            openTextEditor(pageItem.id);
+        } else if (showEdit) {
             openTextEditor(pageItem.id);
         } else if (showCheckbox) {
             // Toggle selection checkbox for easier bulk actions
@@ -1073,21 +1080,41 @@ async function renderPageThumbnail(pageItem, canvas) {
         // Initial render dimensions
         const viewport = page.getViewport({ scale: 1.0 });
         
-        // Fit within 150px width card
-        const scale = 150 / viewport.width;
-        const scaledViewport = page.getViewport({ scale: scale, rotation: pageItem.localRotation });
+        // Fit within 150px width, applying safe rotation
+        const rotation = safeRotation(pageItem.localRotation);
+        let scale = 150 / viewport.width;
+
+        const scaledViewport = page.getViewport({ scale, rotation });
+
+        // Mobile browsers cap canvas memory ~16 megapixels — clamp if needed
+        const MAX_CANVAS_PIXELS = 4096 * 4096;
+        const pixelCount = scaledViewport.width * scaledViewport.height;
+        let finalViewport = scaledViewport;
+        if (pixelCount > MAX_CANVAS_PIXELS) {
+            const safeScale = scale * Math.sqrt(MAX_CANVAS_PIXELS / pixelCount);
+            finalViewport = page.getViewport({ scale: safeScale, rotation });
+        }
 
         const context = canvas.getContext('2d');
-        canvas.width = scaledViewport.width;
-        canvas.height = scaledViewport.height;
+        canvas.width = Math.floor(finalViewport.width);
+        canvas.height = Math.floor(finalViewport.height);
 
-        const renderContext = {
-            canvasContext: context,
-            viewport: scaledViewport
-        };
-        await page.render(renderContext).promise;
+        await page.render({ canvasContext: context, viewport: finalViewport }).promise;
     } catch (err) {
         console.error('Error rendering thumbnail:', err);
+        // Draw a placeholder so the card still shows something on error
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+            canvas.width = 150;
+            canvas.height = 212;
+            ctx.fillStyle = '#f8fafc';
+            ctx.fillRect(0, 0, 150, 212);
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '13px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Preview', 75, 106);
+            ctx.fillText('unavailable', 75, 124);
+        }
     }
 }
 
