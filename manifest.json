@@ -1,0 +1,80 @@
+{
+    "name": "MellowPDF — Serverless PDF Editor",
+    "short_name": "MellowPDF",
+    "description": "Merge, split, compress, rotate, rearrange, and edit PDF text 100% locally. Safe, private, and offline-capable.",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait-primary",
+    "theme_color": "#fb8500",
+    "background_color": "#0f172a",
+    "lang": "en",
+    "categories": ["productivity", "utilities"],
+    "icons": [
+        {
+            "src": "icons/icon-72.png",
+            "sizes": "72x72",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-96.png",
+            "sizes": "96x96",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-128.png",
+            "sizes": "128x128",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-144.png",
+            "sizes": "144x144",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-152.png",
+            "sizes": "152x152",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-384.png",
+            "sizes": "384x384",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "screenshots": [],
+    "shortcuts": [
+        {
+            "name": "Merge PDFs",
+            "short_name": "Merge",
+            "description": "Combine multiple PDFs into one",
+            "url": "/?action=merge",
+            "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
+        },
+        {
+            "name": "Compress PDF",
+            "short_name": "Compress",
+            "description": "Reduce PDF file size",
+            "url": "/?action=compress",
+            "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
+        }
+    ]
+}

@@ -2,20 +2,37 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>MellowPDF — Premium Serverless Client-Side PDF Editor</title>
     <meta name="description" content="Merge, split, rotate, rearrange, and edit PDF text 100% locally. Safe, private client-side PDF workspace brought to you by Mellowkraft.">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
-    
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+    <!-- PWA Theme & Apple-specific -->
+    <meta name="theme-color" content="#fb8500">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MellowPDF">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="MellowPDF">
+    <meta name="msapplication-TileColor" content="#0f172a">
+    <meta name="msapplication-TileImage" content="icons/icon-144.png">
+
     <!-- SEO and Social Previews -->
     <meta property="og:title" content="MellowPDF — Serverless Local PDF Workspace">
     <meta property="og:description" content="Manage and edit your sensitive PDF documents without server uploads. Secure, fast, and 100% local.">
     <meta property="og:type" content="website">
-    
+    <meta property="og:image" content="icons/icon-512.png">
+
     <!-- Styling & Icons -->
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- PDF Processing Libraries (Loaded via CDN) -->
     <!-- PDF-Lib for compiling and editing -->
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
@@ -677,9 +694,83 @@
     </div>
 
     <!-- Notification Toast Container -->
+    <!-- PWA Install Banner -->
+    <div id="pwa-install-banner" style="display: none;">
+        <div class="pwa-banner-icon"><i class="fa-solid fa-bolt"></i></div>
+        <div class="pwa-banner-text">
+            <strong>Install MellowPDF</strong>
+            <span>Add to home screen for offline access</span>
+        </div>
+        <button class="pwa-install-btn" onclick="triggerPwaInstall()">Install</button>
+        <button class="pwa-dismiss-btn" onclick="document.getElementById('pwa-install-banner').style.display='none'">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
     <div id="notification-container"></div>
 
     <!-- Main JavaScript Logic -->
     <script src="app.js"></script>
+
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((reg) => {
+                        console.log('[PWA] Service Worker registered:', reg.scope);
+
+                        // Listen for updates and prompt user to refresh
+                        reg.addEventListener('updatefound', () => {
+                            const newWorker = reg.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // New version available — show a subtle toast
+                                    if (typeof showNotification === 'function') {
+                                        showNotification('MellowPDF has been updated! Refresh to get the latest version.', 'success');
+                                    }
+                                }
+                            });
+                        });
+                    })
+                    .catch((err) => {
+                        console.warn('[PWA] Service Worker registration failed:', err);
+                    });
+            });
+        }
+
+        // PWA Install Prompt — capture beforeinstallprompt for a custom UI
+        let deferredInstallPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredInstallPrompt = e;
+
+            // Show install banner after 3 seconds if not already installed
+            setTimeout(() => {
+                const banner = document.getElementById('pwa-install-banner');
+                if (banner) banner.style.display = 'flex';
+            }, 3000);
+        });
+
+        window.addEventListener('appinstalled', () => {
+            const banner = document.getElementById('pwa-install-banner');
+            if (banner) banner.style.display = 'none';
+            deferredInstallPrompt = null;
+            if (typeof showNotification === 'function') {
+                showNotification('MellowPDF installed! You can now use it offline anytime. ⚡', 'success');
+            }
+        });
+
+        function triggerPwaInstall() {
+            if (deferredInstallPrompt) {
+                deferredInstallPrompt.prompt();
+                deferredInstallPrompt.userChoice.then((choice) => {
+                    const banner = document.getElementById('pwa-install-banner');
+                    if (banner) banner.style.display = 'none';
+                    deferredInstallPrompt = null;
+                });
+            }
+        }
+    </script>
 </body>
 </html>
